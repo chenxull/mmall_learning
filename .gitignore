@@ -1,0 +1,19 @@
+*.class
+
+#package file
+
+*.war
+*.ear
+
+
+*.orig
+
+traget/
+
+.settings/
+.project
+.classpath
+
+.idea/
+/idea/
+*.ipr
