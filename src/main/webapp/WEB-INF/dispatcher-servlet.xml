@@ -20,6 +20,7 @@
                     </list>
                 </property>
             </bean>
+            <!-- 用来将返回值转换为 json，在需要的类处 配置@ResponseBody 即可            -->
             <bean class="org.springframework.http.converter.json.MappingJacksonHttpMessageConverter">
                 <property name="supportedMediaTypes">
                     <list>
