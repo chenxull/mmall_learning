@@ -174,7 +174,7 @@
     where username = #{username}
     and password = #{password}
   </select>
-  <select id="slectQuestionByUsername" resultMap="string" parameterType="string">
+  <select id="slectQuestionByUsername" resultType="string" parameterType="string">
     select
     question
     from mmall_user
@@ -187,6 +187,18 @@
     where username = #{username}
     and question = #{question}
     and answer = #{answer}
+  </select>
+  <select id="checkPassword" resultType="int" parameterType="map">
+    select
+    count(1)
+    from mmall_user
+    where password = #{password}
+    and  id = #{userId}
+  </select>
+  <select id="checktEmailByUserId" resultType="int" parameterType="map">
+    select count(1) from mmall_user
+    where email = #{email}
+    and id != #{userID}
   </select>
 
 </mapper>

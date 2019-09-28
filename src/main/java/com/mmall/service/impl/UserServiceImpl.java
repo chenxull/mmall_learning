@@ -109,12 +109,11 @@ public class UserServiceImpl implements IUserService {
 
     public ServerResponse<String> checkAnswer(String username,String question,String answer){
         int resultCount = userMapper.checkAnswer(username,question,answer);
-        if (resultCount>0){
+        if (resultCount > 0){
             String forgetToken = UUID.randomUUID().toString();
             // 将 token 信息存储在本地缓存中
             TokenCache.setKey(TokenCache.TOKEN_PREFIX+username,forgetToken);
             return ServerResponse.createBySuccessMessage(forgetToken);
-//            fogetToken
         }
         return ServerResponse.createByErrorMessage("问题答案错误");
     }
@@ -149,6 +148,59 @@ public class UserServiceImpl implements IUserService {
         }
 
         return ServerResponse.createByErrorMessage("修改密码失败");
+    }
+
+
+    public ServerResponse<String> resetPassword(String passwordOld,String passwordNew,User user){
+//        要效验用户的旧密码
+        int resultCount = userMapper.checkPassword(MD5Util.MD5EncodeUtf8(passwordOld),user.getId());
+        if (resultCount == 0){
+            return ServerResponse.createByErrorMessage("旧密码错误");
+        }
+        user.setPassword(MD5Util.MD5EncodeUtf8(passwordNew));
+        int updateCount = userMapper.updateByPrimaryKeySelective(user);
+        if (updateCount >0){
+            return ServerResponse.createBySuccessMessage("密码更新成功");
+        }
+        return ServerResponse.createByErrorMessage("密码更新失败");
+    }
+
+    // 更新个人信息
+    public ServerResponse<User> updateInformation(User user){
+//        username 不能改
+//        email 也要效验，是否已经存在，是否能相同
+        int resultCount = userMapper.checktEmailByUserId(user.getEmail(),user.getId());
+        if (resultCount > 0){
+            return ServerResponse.createByErrorMessage("email 已经存在，请更换");
+        }
+        User updateUser = new User();
+        updateUser.setId(user.getId());
+        updateUser.setEmail(user.getEmail());
+        updateUser.setPhone(user.getPhone());
+        updateUser.setQuestion(user.getQuestion());
+        updateUser.setAnswer(user.getAnswer());
+
+        int updateCount = userMapper.updateByPrimaryKeySelective(updateUser);
+        if(updateCount > 0){
+            return ServerResponse.createBySuccess("更新个人信息成功",updateUser);
+        }
+        return ServerResponse.createByErrorMessage("更新个人信息失败");
+    }
+
+    public ServerResponse<User> get_information(Integer userId){
+        User user = userMapper.selectByPrimaryKey(userId);
+        if(user == null){
+            return ServerResponse.createByErrorMessage("找不到当前用户");
+        }
+        user.setPassword(org.apache.commons.lang3.StringUtils.EMPTY);
+        return ServerResponse.createBySuccess(user);
+    }
+
+    public ServerResponse checkAdminRole(User user){
+        if (user!=null && user.getRole().intValue() == Const.Role.ROLE_ADMIN){
+            return ServerResponse.createBySuccess();
+        }
+        return ServerResponse.createByError();
     }
 
 }
